@@ -23,7 +23,6 @@ def kaderi_yaz():
 
 def turu_bitir(kayip=False):
     if kayip:
-        # BUGFIX: Kayıp miktarı net %25 olarak hesaplanır ve bankadan düşülür
         ceza = int(st.session_state.banka * 0.25)
         st.session_state.banka -= ceza
         st.session_state.mesaj = f"💥 TUZAK! {st.session_state.tur_altini} altın ve bankadan {ceza} altın (tedavi masrafı) kesildi!"
@@ -74,7 +73,15 @@ if st.session_state.banka < st.session_state.giris_ucreti and not st.session_sta
         oyunu_sifirla()
     st.stop()
 
-st.info(st.session_state.mesaj)
+# INTERAKTIF MESAJ PANELI (DÜZELTİLDİ)
+if "💥" in st.session_state.mesaj:
+    st.error(st.session_state.mesaj)
+elif "🏦" in st.session_state.mesaj or "✨" in st.session_state.mesaj:
+    st.success(st.session_state.mesaj)
+elif "🛡️" in st.session_state.mesaj or "🌀" in st.session_state.mesaj:
+    st.warning(st.session_state.mesaj)
+else:
+    st.info(st.session_state.mesaj)
 
 if not st.session_state.tur_aktif:
     col1, col2 = st.columns(2)
@@ -84,6 +91,7 @@ if not st.session_state.tur_aktif:
             if st.session_state.banka >= 60:
                 st.session_state.banka -= 60
                 st.session_state.envanter["Kalkan"] += 1
+                st.session_state.mesaj = "🛡️ Kalkan satın alındı ve çantaya eklendi."
                 st.rerun()
             else: st.error("Yetersiz bakiye!")
             
@@ -91,6 +99,7 @@ if not st.session_state.tur_aktif:
             if st.session_state.banka >= 50:
                 st.session_state.banka -= 50
                 st.session_state.envanter["Gözcü"] += 1
+                st.session_state.mesaj = "👁️ Gözcü Kuşu satın alındı."
                 st.rerun()
             else: st.error("Yetersiz bakiye!")
 
@@ -98,6 +107,7 @@ if not st.session_state.tur_aktif:
             if st.session_state.banka >= 120:
                 st.session_state.banka -= 120
                 st.session_state.envanter["Sıfırlayıcı"] += 1
+                st.session_state.mesaj = "🌀 Sıfırlayıcı satın alındı."
                 st.rerun()
             else: st.error("Yetersiz bakiye!")
 
@@ -107,12 +117,12 @@ if not st.session_state.tur_aktif:
             st.session_state.banka -= st.session_state.giris_ucreti
             st.session_state.tur_aktif = True
             st.session_state.tuzak_orani = 0.20
+            st.session_state.mesaj = "🔦 Mağaraya girildi. Dikkatli ilerle!"
             kaderi_yaz()
             st.rerun()
 else:
     adim = st.session_state.adim + 1
     kazanc = 20 if adim <= 3 else (50 if adim <= 6 else 150)
-    # BUGFIX: Gösterilen hasar da %25 üzerinden netleşti
     ceza_tahmini = int(st.session_state.banka * 0.25)
     hasar_gostergesi = ceza_tahmini + st.session_state.tur_altini
     
@@ -143,6 +153,7 @@ else:
             st.session_state.tur_altini += kazanc
             st.session_state.tuzak_orani += 0.07
             st.session_state.adim += 1
+            st.session_state.mesaj = f"✨ Başarılı! {kazanc} altın topladın. Toplam: {st.session_state.tur_altini}"
             st.session_state.gozcu_fısıltı = ""
             kaderi_yaz()
             st.rerun()
@@ -165,6 +176,7 @@ else:
         if st.session_state.envanter["Sıfırlayıcı"] > 0:
             st.session_state.envanter["Sıfırlayıcı"] -= 1
             st.session_state.tuzak_orani = 0.20
+            st.session_state.mesaj = "🌀 Mağara titreşimi azaldı, risk sıfırlandı!"
             kaderi_yaz()
             st.rerun()
         else: st.error("Eşyan yok!")
