@@ -45,6 +45,21 @@ def oyunu_sifirla():
         del st.session_state[key]
     st.rerun()
 
+# --- ANA BAŞLIK VE NASIL OYNANIR ---
+t_col1, t_col2 = st.columns([0.8, 0.2])
+with t_col1:
+    st.title("💎 Karanlık Mağara")
+with t_col2:
+    st.markdown("\n") # Hizalama için
+    st.markdown("❓", help="""
+    **NASIL OYNANIR?**
+    1. **Giriş:** Ücreti ödeyip mağaraya girin.
+    2. **Risk:** Her adımda 'AÇ' diyerek altın arayın. Ama dikkat, her adımda tuzak ihtimali %7 artar!
+    3. **Hasar:** Tuzağa yakalanırsanız turdaki altınları ve BANKADAKİ paranızın %25'ini kaybedersiniz.
+    4. **Bankala:** İstediğiniz an altınları güvenli bankaya aktarıp çıkabilirsiniz. Her başarılı çıkışta bir sonraki giriş ücreti artar.
+    5. **Market:** Kalkan (koruma), Gözcü (dikizleme) ve Sıfırlayıcı (risk azaltma) eşyalarını stratejik kullanın.
+    """)
+
 # --- SIDEBAR ---
 with st.sidebar:
     st.header("🎒 Oyuncu Bilgileri")
@@ -58,9 +73,6 @@ with st.sidebar:
     st.write("---")
     if st.button("🔄 OYUNU SIFIRLA"):
         oyunu_sifirla()
-
-# --- ANA EKRAN ---
-st.title("💎 Karanlık Mağara")
 
 if st.session_state.banka < st.session_state.giris_ucreti and not st.session_state.tur_aktif:
     st.error(f"💀 İFLAS ETTİN!")
@@ -77,7 +89,6 @@ if not st.session_state.tur_aktif:
     col1, col2 = st.columns(2)
     with col1:
         st.subheader("🛒 Market")
-        
         m1, m1h = st.columns([0.8, 0.2])
         if m1.button("🛡️ Kalkan Al (60)", use_container_width=True):
             if st.session_state.banka >= 60:
@@ -137,7 +148,7 @@ else:
             if st.session_state.envanter["Kalkan"] > 0:
                 st.session_state.envanter["Kalkan"] -= 1
                 st.session_state.mesaj = "🛡️ Kalkan seni korudu!"
-                st.session_state.gozcu_fısıltı = "" # Fısıltı temizlendi
+                st.session_state.gozcu_fısıltı = ""
                 kaderi_yaz(); st.rerun()
             else:
                 turu_bitir(kayip=True); st.rerun()
@@ -146,7 +157,7 @@ else:
             st.session_state.tuzak_orani += 0.07
             st.session_state.adim += 1
             st.session_state.mesaj = f"✨ Başarılı! +{kazanc} altın."
-            st.session_state.gozcu_fısıltı = "" # Fısıltı temizlendi
+            st.session_state.gozcu_fısıltı = ""
             kaderi_yaz(); st.rerun()
     b1h.markdown("❓", help="Sandığı açar. Başarısızlık bankanın %25'ini ve tur altınlarını götürür.")
 
