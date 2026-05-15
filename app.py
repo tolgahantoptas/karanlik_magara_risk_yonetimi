@@ -19,14 +19,13 @@ if 'banka' not in st.session_state:
 
 # --- KADER BELİRLEME ---
 def kaderi_yaz():
-    """Bir sonraki sandığın kaderini risk oranına göre mühürler."""
     st.session_state.sandik_icerigi = "TUZAK" if random.random() < st.session_state.tuzak_orani else "ALTIN"
 
 def turu_bitir(kayip=False):
     if kayip:
         hasar = int(st.session_state.banka * 0.25)
         st.session_state.banka -= hasar
-        st.session_state.mesaj = f"💥 TUZAK! {st.session_state.tur_altini} altın ve bankadan {hasar} altın gitti!"
+        st.session_state.mesaj = f"💥 TUZAK! Bankadan {hasar} altın gitti!"
     else:
         st.session_state.banka += st.session_state.tur_altini
         st.session_state.giris_ucreti += 15
@@ -68,7 +67,6 @@ with st.sidebar:
 # --- ANA EKRAN ---
 st.title("💎 Karanlık Mağara")
 
-# İflas Kontrolü
 if st.session_state.banka < st.session_state.giris_ucreti and not st.session_state.tur_aktif:
     st.error(f"💀 İFLAS ETTİN! Bankanda sadece {st.session_state.banka} altın kaldı.")
     if st.button("♻️ YENİDEN BAŞLA", type="primary"):
@@ -81,31 +79,28 @@ if not st.session_state.tur_aktif:
     col1, col2 = st.columns(2)
     with col1:
         st.subheader("🛒 Market")
-        if st.button("🛡️ Kalkan Al (60)", help="Tuzağa karşı 1 kez korur."):
+        if st.button("🛡️ Kalkan Al (60)", help="Tuzaktan 1 kez korur."):
             if st.session_state.banka >= 60:
                 st.session_state.banka -= 60
                 st.session_state.envanter["Kalkan"] += 1
                 st.rerun()
-            else: st.error("Yetersiz bakiye!")
-        if st.button("👁️ Gözcü Al (50)", help="Sıradaki sandığa bakar."):
+        if st.button("👁️ Gözcü Al (50)", help="Sandığa önceden bakar."):
             if st.session_state.banka >= 50:
                 st.session_state.banka -= 50
                 st.session_state.envanter["Gözcü"] += 1
                 st.rerun()
-            else: st.error("Yetersiz bakiye!")
-        if st.button("🌀 Sıfırlayıcı Al (120)", help="Riski %20'ye çeker."):
+        if st.button("🌀 Sıfırlayıcı Al (120)", help="Riski %20 yapar."):
             if st.session_state.banka >= 120:
                 st.session_state.banka -= 120
                 st.session_state.envanter["Sıfırlayıcı"] += 1
                 st.rerun()
-            else: st.error("Yetersiz bakiye!")
     with col2:
         st.subheader("🚪 Giriş")
         if st.button("🔥 MAĞARAYA GİR", type="primary", use_container_width=True, help="Macerayı başlat."):
             st.session_state.banka -= st.session_state.giris_ucreti
             st.session_state.tur_aktif = True
             st.session_state.tuzak_orani = 0.20
-            kaderi_yaz() # Mağaraya girerken kader belirlendi
+            kaderi_yaz()
             st.rerun()
 else:
     # --- MAĞARA İÇİ ---
@@ -119,28 +114,30 @@ else:
     c2.metric("Risk", f"%{int(st.session_state.tuzak_orani*100)}")
     c3.metric("Olası Kayıp", hasar)
 
+    # Kazanç bilgisi burada gösteriliyor
+    st.write(f"🎁 **Sıradaki Ödül:** {kazanc} Altın")
+
     if st.session_state.gozcu_fısıltı:
         st.warning(st.session_state.gozcu_fısıltı)
 
     b1, b2, b3, b4 = st.columns(4)
     
     if b1.button("📦 AÇ", help="Sandığı aç."):
-        # KRİTİK KONTROL: Kaderde ne varsa o olur
         if st.session_state.sandik_icerigi == "TUZAK":
             if st.session_state.envanter["Kalkan"] > 0:
                 st.session_state.envanter["Kalkan"] -= 1
-                st.session_state.mesaj = "🛡️ Kalkan seni korudu! Bir sonraki sandık için hazırlan."
-                kaderi_yaz() # Kalkan sonrası yeni kader
+                st.session_state.mesaj = "🛡️ Kalkan seni korudu!"
+                kaderi_yaz()
                 st.rerun()
             else:
-                turu_bitir(kayip=True) # Kalkan yoksa yanar
+                turu_bitir(kayip=True)
                 st.rerun()
         else:
             st.session_state.tur_altini += kazanc
             st.session_state.tuzak_orani += 0.07
             st.session_state.adim += 1
             st.session_state.gozcu_fısıltı = ""
-            kaderi_yaz() # Başarılı açılış sonrası yeni kader
+            kaderi_yaz()
             st.rerun()
 
     if b2.button("🏦 BANKALA", help="Altınları al ve kaç."):
@@ -161,6 +158,6 @@ else:
         if st.session_state.envanter["Sıfırlayıcı"] > 0:
             st.session_state.envanter["Sıfırlayıcı"] -= 1
             st.session_state.tuzak_orani = 0.20
-            kaderi_yaz() # Risk değişince kader de tazelenmeli
+            kaderi_yaz()
             st.rerun()
         else: st.error("Eşyan yok!")
