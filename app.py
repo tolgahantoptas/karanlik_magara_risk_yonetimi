@@ -23,9 +23,10 @@ def kaderi_yaz():
 
 def turu_bitir(kayip=False):
     if kayip:
-        hasar = int(st.session_state.banka * 0.25)
-        st.session_state.banka -= hasar
-        st.session_state.mesaj = f"💥 TUZAK! Bankadan {hasar} altın (tedavi masrafı) kesildi!"
+        # BUGFIX: Kayıp miktarı net %25 olarak hesaplanır ve bankadan düşülür
+        ceza = int(st.session_state.banka * 0.25)
+        st.session_state.banka -= ceza
+        st.session_state.mesaj = f"💥 TUZAK! {st.session_state.tur_altini} altın ve bankadan {ceza} altın (tedavi masrafı) kesildi!"
     else:
         st.session_state.banka += st.session_state.tur_altini
         st.session_state.giris_ucreti += 15
@@ -111,13 +112,15 @@ if not st.session_state.tur_aktif:
 else:
     adim = st.session_state.adim + 1
     kazanc = 20 if adim <= 3 else (50 if adim <= 6 else 150)
-    hasar = int(st.session_state.banka * 0.25) + st.session_state.tur_altini
+    # BUGFIX: Gösterilen hasar da %25 üzerinden netleşti
+    ceza_tahmini = int(st.session_state.banka * 0.25)
+    hasar_gostergesi = ceza_tahmini + st.session_state.tur_altini
     
     st.subheader(f"📍 Adım: {adim}")
     c1, c2, c3 = st.columns(3)
     c1.metric("Tur Altını", st.session_state.tur_altini)
     c2.metric("Risk", f"%{int(st.session_state.tuzak_orani*100)}")
-    c3.metric("Olası Kayıp", hasar)
+    c3.metric("Olası Kayıp", hasar_gostergesi)
 
     st.write(f"🎁 **Sıradaki Ödül:** {kazanc} Altın")
 
