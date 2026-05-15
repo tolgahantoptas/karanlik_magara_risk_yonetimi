@@ -137,6 +137,7 @@ else:
             if st.session_state.envanter["Kalkan"] > 0:
                 st.session_state.envanter["Kalkan"] -= 1
                 st.session_state.mesaj = "🛡️ Kalkan seni korudu!"
+                st.session_state.gozcu_fısıltı = "" # Fısıltı temizlendi
                 kaderi_yaz(); st.rerun()
             else:
                 turu_bitir(kayip=True); st.rerun()
@@ -145,6 +146,7 @@ else:
             st.session_state.tuzak_orani += 0.07
             st.session_state.adim += 1
             st.session_state.mesaj = f"✨ Başarılı! +{kazanc} altın."
+            st.session_state.gozcu_fısıltı = "" # Fısıltı temizlendi
             kaderi_yaz(); st.rerun()
     b1h.markdown("❓", help="Sandığı açar. Başarısızlık bankanın %25'ini ve tur altınlarını götürür.")
 
