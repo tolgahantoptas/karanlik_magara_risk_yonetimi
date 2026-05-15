@@ -45,24 +45,28 @@ def oyunu_sifirla():
         del st.session_state[key]
     st.rerun()
 
-# --- ANA BAŞLIK VE YENİ TASARIMLI MENÜ ---
+# --- ANA BAŞLIK VE GÜNCELLENMİŞ MENÜ ---
 t_col1, t_col2 = st.columns([0.7, 0.3])
 with t_col1:
     st.title("💎 Karanlık Mağara")
 with t_col2:
-    st.write("") # Boşluk
+    st.write("") 
     with st.popover("❓ Nasıl Oynanır"):
         st.markdown("### 📖 Oyun Kuralları")
         st.write("---")
-        st.markdown("**1. Giriş:** Ücreti ödeyip mağaraya girin.")
-        st.markdown("**2. Risk:** Her sandık açışta tuzak ihtimali %7 artar.")
-        st.markdown("**3. Hasar:** Tuzağa yakalanırsanız bankanın **%25'i** silinir.")
-        st.markdown("**4. Bankala:** İstediğiniz an kazancı alıp çıkabilirsiniz.")
+        st.markdown("**1. Giriş:** Giriş ücretini ödeyip macerayı başlatın.")
+        st.markdown("**2. Risk:** Her sandıkta tuzak ihtimali **%7 artar.**")
+        st.markdown("**3. Bankala:** İstediğiniz an kazancı alıp çıkabilirsiniz.")
+        st.write("---")
+        st.markdown("### 💀 İflas Mekaniği (⚠️ DİKKAT)")
+        st.markdown("- **Kritik Hasar:** Tuzağa yakalanırsanız turdaki tüm altınlarınızı ve bankadaki toplam servetinizin **%25'ini** kaybedersiniz.")
+        st.markdown("- **Maliyet Artışı:** Her başarılı bankalamada bir sonraki **giriş ücreti +15 altın** artar.")
+        st.markdown("- **Oyun Sonu:** Bankadaki paranız giriş ücretinin altına düşerse iflas edersiniz ve oyun biter.")
         st.write("---")
         st.markdown("### 🎒 Stratejik Eşyalar")
-        st.write("🛡️ **Kalkan:** Tuzağı bir kez engeller.")
-        st.write("👁️ **Gözcü:** Sandığın içine bakmanızı sağlar.")
-        st.write("🌀 **Sıfırlayıcı:** Riski tekrar %20'ye düşürür.")
+        st.write("🛡️ **Kalkan:** Tuzağı ve %25 banka hasarını bir kez engeller.")
+        st.write("👁️ **Gözcü:** Sıradaki sandığa bakar (Derinlerde yanılabilir).")
+        st.write("🌀 **Sıfırlayıcı:** Tuzak riskini tekrar %20'ye düşürür.")
 
 # --- SIDEBAR ---
 with st.sidebar:
@@ -79,7 +83,7 @@ with st.sidebar:
         oyunu_sifirla()
 
 if st.session_state.banka < st.session_state.giris_ucreti and not st.session_state.tur_aktif:
-    st.error(f"💀 İFLAS ETTİN!")
+    st.error(f"💀 İFLAS ETTİN! Bankan giriş ücretini karşılamıyor.")
     if st.button("♻️ YENİDEN BAŞLA", type="primary"):
         oyunu_sifirla()
     st.stop()
@@ -100,8 +104,8 @@ if not st.session_state.tur_aktif:
                 st.session_state.envanter["Kalkan"] += 1
                 st.session_state.mesaj = "🛡️ Kalkan satın alındı."
                 st.rerun()
-        m1h.markdown("❓", help="Pasif Savunma: Mağara içinde tuzağa yakalandığınızda banka hasarını bir defaya mahsus %100 engeller.")
-
+            else: st.error("Yetersiz bakiye!")
+            
         m2, m2h = st.columns([0.8, 0.2])
         if m2.button("👁️ Gözcü Al (50)", use_container_width=True):
             if st.session_state.banka >= 50:
@@ -109,7 +113,7 @@ if not st.session_state.tur_aktif:
                 st.session_state.envanter["Gözcü"] += 1
                 st.session_state.mesaj = "👁️ Gözcü Kuşu satın alındı."
                 st.rerun()
-        m2h.markdown("❓", help="İstihbarat: Bir sonraki sandığın içeriğini kontrol eder. Derinlere inildikçe yanılma payı artar.")
+            else: st.error("Yetersiz bakiye!")
 
         m3, m3h = st.columns([0.8, 0.2])
         if m3.button("🌀 Sıfırlayıcı Al (120)", use_container_width=True):
@@ -118,7 +122,7 @@ if not st.session_state.tur_aktif:
                 st.session_state.envanter["Sıfırlayıcı"] += 1
                 st.session_state.mesaj = "🌀 Sıfırlayıcı satın alındı."
                 st.rerun()
-        m3h.markdown("❓", help="Risk Yönetimi: Biriken tuzak olasılığını kalıcı olarak başlangıç seviyesi olan %20'ye sabitler.")
+            else: st.error("Yetersiz bakiye!")
 
     with col2:
         st.subheader("🚪 Giriş")
@@ -130,7 +134,7 @@ if not st.session_state.tur_aktif:
             st.session_state.mesaj = "🔦 Mağara girildi. Dikkatli ilerle!"
             kaderi_yaz()
             st.rerun()
-        g1h.markdown("❓", help="Giriş ücretini ödeyerek macerayı başlatır. Mağara içinde markete erişim kapalıdır.")
+        g1h.markdown("❓", help="Giriş ücretini ödeyerek macerayı başlatır.")
 
 else:
     adim = st.session_state.adim + 1
@@ -163,11 +167,11 @@ else:
             st.session_state.mesaj = f"✨ Başarılı! +{kazanc} altın."
             st.session_state.gozcu_fısıltı = ""
             kaderi_yaz(); st.rerun()
-    b1h.markdown("❓", help="Sandığı açar. Başarısızlık bankanın %25'ini ve tur altınlarını götürür.")
+    b1h.markdown("❓", help="Sandığı açar. Kayıp durumunda bankanın %25'i gider.")
 
     if b2.button("🏦 BANKALA", use_container_width=True):
         turu_bitir(kayip=False); st.rerun()
-    b2h.markdown("❓", help="Toplanan altınları bankaya aktarır ve turu başarılı şekilde sonlandırır.")
+    b2h.markdown("❓", help="Kazancı bankaya aktarır ve turu bitirir.")
 
     st.write("")
     b3, b3h, b4, b4h = st.columns([0.4, 0.1, 0.4, 0.1])
@@ -178,7 +182,7 @@ else:
             tahmin = st.session_state.sandik_icerigi if random.random() <= guven else ("ALTIN" if st.session_state.sandik_icerigi=="TUZAK" else "TUZAK")
             st.session_state.gozcu_fısıltı = f"Gözcü: '{tahmin}' (Güven: %{guven*100})"
             st.rerun()
-    b3h.markdown("❓", help="Bir sonraki sandığın içeriğine bakar. Derinlerde doğruluk payı düşer.")
+    b3h.markdown("❓", help="Sıradaki sandığa bakar.")
 
     if b4.button("🌀 SIFIRLA", use_container_width=True):
         if st.session_state.envanter["Sıfırlayıcı"] > 0:
@@ -186,4 +190,4 @@ else:
             st.session_state.tuzak_orani = 0.20
             st.session_state.mesaj = "🌀 Mağara titreşimi azaldı, risk %20'ye sıfırlandı!"
             kaderi_yaz(); st.rerun()
-    b4h.markdown("❓", help="Mevcut risk oranını başlangıca (%20) düşürür.")
+    b4h.markdown("❓", help="Mevcut risk oranını %20'ye düşürür.")
