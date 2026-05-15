@@ -73,7 +73,7 @@ if st.session_state.banka < st.session_state.giris_ucreti and not st.session_sta
         oyunu_sifirla()
     st.stop()
 
-# INTERAKTIF MESAJ PANELI (DÜZELTİLDİ)
+# INTERAKTIF MESAJ PANELI
 if "💥" in st.session_state.mesaj:
     st.error(st.session_state.mesaj)
 elif "🏦" in st.session_state.mesaj or "✨" in st.session_state.mesaj:
@@ -95,7 +95,7 @@ if not st.session_state.tur_aktif:
                 st.rerun()
             else: st.error("Yetersiz bakiye!")
             
-        if st.button("👁️ Gözcü Al (50)", help="İstihbarat: Bir sonraki sandığın içeriğini önceden kontrol eder. 7. adımdan itibaren mağara sarsıldığı için doğruluk oranı %80'e düşer."):
+        if st.button("👁️ Gözcü Al (50)", help="İstihbarat: Bir sonraki sandığın içeriğini kontrol eder. Mağaranın derinliklerine inildikçe duyuları zayıflar ve yanılma payı artar."):
             if st.session_state.banka >= 50:
                 st.session_state.banka -= 50
                 st.session_state.envanter["Gözcü"] += 1
@@ -176,7 +176,8 @@ else:
         if st.session_state.envanter["Sıfırlayıcı"] > 0:
             st.session_state.envanter["Sıfırlayıcı"] -= 1
             st.session_state.tuzak_orani = 0.20
-            st.session_state.mesaj = "🌀 Mağara titreşimi azaldı, risk sıfırlandı!"
+            # SIFIRLAYICI MESAJI BURADA EKLENDİ
+            st.session_state.mesaj = "🌀 Mağara titreşimi azaldı, risk %20'ye sıfırlandı!"
             kaderi_yaz()
             st.rerun()
         else: st.error("Eşyan yok!")
