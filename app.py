@@ -5,17 +5,20 @@ import random
 st.set_page_config(page_title="Karanlık Mağara", page_icon="💎")
 
 # --- DURUM YÖNETİMİ ---
-if 'banka' not in st.session_state:
-    st.session_state.banka = 200
-    st.session_state.envanter = {"Kalkan": 0, "Gözcü": 0, "Sıfırlayıcı": 0}
-    st.session_state.giris_ucreti = 30
-    st.session_state.tur_aktif = False
-    st.session_state.tur_altini = 0
-    st.session_state.tuzak_orani = 0.20
-    st.session_state.adim = 0
-    st.session_state.mesaj = "Hoş geldin maceracı! Mağara seni bekliyor."
-    st.session_state.gozcu_fısıltı = ""
-    st.session_state.sandik_icerigi = None 
+def ilk_yukleme():
+    if 'banka' not in st.session_state:
+        st.session_state.banka = 200
+        st.session_state.envanter = {"Kalkan": 0, "Gözcü": 0, "Sıfırlayıcı": 0}
+        st.session_state.giris_ucreti = 30
+        st.session_state.tur_aktif = False
+        st.session_state.tur_altini = 0
+        st.session_state.tuzak_orani = 0.20
+        st.session_state.adim = 0
+        st.session_state.mesaj = "Hoş geldin maceracı! Mağara seni bekliyor."
+        st.session_state.gozcu_fısıltı = ""
+        st.session_state.sandik_icerigi = None
+
+ilk_yukleme()
 
 # --- KADER BELİRLEME ---
 def kaderi_yaz():
@@ -38,16 +41,9 @@ def turu_bitir(kayip=False):
     st.session_state.sandik_icerigi = None
 
 def oyunu_sifirla():
-    st.session_state.banka = 200
-    st.session_state.envanter = {"Kalkan": 0, "Gözcü": 0, "Sıfırlayıcı": 0}
-    st.session_state.giris_ucreti = 30
-    st.session_state.tur_aktif = False
-    st.session_state.tur_altini = 0
-    st.session_state.adim = 0
-    st.session_state.tuzak_orani = 0.20
-    st.session_state.mesaj = "Oyun sıfırlandı. Yeni macera başlasın!"
-    st.session_state.gozcu_fısıltı = ""
-    st.session_state.sandik_icerigi = None
+    # Session state'i tamamen temizleyip yeniden başlatıyoruz
+    for key in list(st.session_state.keys()):
+        del st.session_state[key]
     st.rerun()
 
 # --- SIDEBAR ---
@@ -61,122 +57,125 @@ with st.sidebar:
     st.write(f"👁️ **Gözcü Kuşu:** {st.session_state.envanter['Gözcü']} adet")
     st.write(f"🌀 **Sıfırlayıcı:** {st.session_state.envanter['Sıfırlayıcı']} adet")
     st.write("---")
-    st.button("🔄 OYUNU SIFIRLA", help="Mevcut tüm ilerlemeyi, envanteri ve altınları silerek oyunu başlangıç durumuna (200 Altın) döndürür.")
+    if st.button("🔄 OYUNU SIFIRLA", help="Tüm ilerlemeyi siler."):
+        oyunu_sifirla()
 
 # --- ANA EKRAN ---
 st.title("💎 Karanlık Mağara")
 
 if st.session_state.banka < st.session_state.giris_ucreti and not st.session_state.tur_aktif:
-    st.error(f"💀 İFLAS ETTİN! Bankanda sadece {st.session_state.banka} altın kaldı.")
+    st.error(f"💀 İFLAS ETTİN!")
     if st.button("♻️ YENİDEN BAŞLA", type="primary"):
         oyunu_sifirla()
     st.stop()
 
-# INTERAKTIF MESAJ PANELI
-if "💥" in st.session_state.mesaj:
-    st.error(st.session_state.mesaj)
-elif "🏦" in st.session_state.mesaj or "✨" in st.session_state.mesaj:
-    st.success(st.session_state.mesaj)
-elif "🛡️" in st.session_state.mesaj or "🌀" in st.session_state.mesaj:
-    st.warning(st.session_state.mesaj)
-else:
-    st.info(st.session_state.mesaj)
+# MESAJ PANELI
+if "💥" in st.session_state.mesaj: st.error(st.session_state.mesaj)
+elif "🏦" in st.session_state.mesaj or "✨" in st.session_state.mesaj: st.success(st.session_state.mesaj)
+elif "🛡️" in st.session_state.mesaj or "🌀" in st.session_state.mesaj: st.warning(st.session_state.mesaj)
+else: st.info(st.session_state.mesaj)
 
 if not st.session_state.tur_aktif:
     col1, col2 = st.columns(2)
     with col1:
         st.subheader("🛒 Market")
-        # YARDIM BALONCUKLARI (MOBIL UYUMLU SORU ISARETLERI)
-        if st.button("🛡️ Kalkan Al (60)", help="Pasif Savunma: Mağara içinde tuzağa yakalandığınızda banka hasarını ve altın kaybını bir defaya mahsus %100 engeller."):
+        
+        # Kalkan Alanı
+        m1, m1h = st.columns([0.85, 0.15])
+        if m1.button("🛡️ Kalkan Al (60)", use_container_width=True):
             if st.session_state.banka >= 60:
                 st.session_state.banka -= 60
                 st.session_state.envanter["Kalkan"] += 1
-                st.session_state.mesaj = "🛡️ Kalkan satın alındı ve çantaya eklendi."
+                st.session_state.mesaj = "🛡️ Kalkan satın alındı."
                 st.rerun()
-            else: st.error("Yetersiz bakiye!")
-            
-        if st.button("👁️ Gözcü Al (50)", help="İstihbarat: Bir sonraki sandığın içeriğini kontrol eder. Mağaranın derinliklerine inildikçe duyuları zayıflar ve yanılma payı artar."):
+        m1h.button("❓", key="h_kalkan", help="Pasif Savunma: Mağara içinde tuzağa yakalandığınızda banka hasarını ve altın kaybını bir defaya mahsus %100 engeller.")
+
+        # Gözcü Alanı
+        m2, m2h = st.columns([0.85, 0.15])
+        if m2.button("👁️ Gözcü Al (50)", use_container_width=True):
             if st.session_state.banka >= 50:
                 st.session_state.banka -= 50
                 st.session_state.envanter["Gözcü"] += 1
                 st.session_state.mesaj = "👁️ Gözcü Kuşu satın alındı."
                 st.rerun()
-            else: st.error("Yetersiz bakiye!")
+        m2h.button("❓", key="h_gozcu", help="İstihbarat: Bir sonraki sandığın içeriğini kontrol eder. Mağaranın derinliklerine inildikçe duyuları zayıflar ve yanılma payı artar.")
 
-        if st.button("🌀 Sıfırlayıcı Al (120)", help="Risk Yönetimi: Adım sayısı ilerledikçe biriken tuzak olasılığını kalıcı olarak başlangıç seviyesi olan %20'ye sabitler."):
+        # Sıfırlayıcı Alanı
+        m3, m3h = st.columns([0.85, 0.15])
+        if m3.button("🌀 Sıfırlayıcı Al (120)", use_container_width=True):
             if st.session_state.banka >= 120:
                 st.session_state.banka -= 120
                 st.session_state.envanter["Sıfırlayıcı"] += 1
                 st.session_state.mesaj = "🌀 Sıfırlayıcı satın alındı."
                 st.rerun()
-            else: st.error("Yetersiz bakiye!")
+        m3h.button("❓", key="h_sifir", help="Risk Yönetimi: Adım sayısı ilerledikçe biriken tuzak olasılığını kalıcı olarak başlangıç seviyesi olan %20'ye sabitler.")
 
     with col2:
         st.subheader("🚪 Giriş")
-        if st.button("🔥 MAĞARAYA GİR", type="primary", use_container_width=True, help="Belirtilen giriş ücretini ödeyerek mağaraya girer. Mağara içinde markete erişim kapalıdır."):
+        g1, g1h = st.columns([0.85, 0.15])
+        if g1.button("🔥 MAĞARAYA GİR", type="primary", use_container_width=True):
             st.session_state.banka -= st.session_state.giris_ucreti
             st.session_state.tur_aktif = True
             st.session_state.tuzak_orani = 0.20
             st.session_state.mesaj = "🔦 Mağara girildi. Dikkatli ilerle!"
             kaderi_yaz()
             st.rerun()
+        g1h.button("❓", key="h_giris", help="Belirtilen giriş ücretini ödeyerek mağaraya girer. Mağara içinde markete erişim kapalıdır.")
+
 else:
+    # --- MAĞARA İÇİ ---
     adim = st.session_state.adim + 1
     kazanc = 20 if adim <= 3 else (50 if adim <= 6 else 150)
     ceza_tahmini = int(st.session_state.banka * 0.25)
-    hasar_gostergesi = ceza_tahmini + st.session_state.tur_altini
     
     st.subheader(f"📍 Adım: {adim}")
     c1, c2, c3 = st.columns(3)
     c1.metric("Tur Altını", st.session_state.tur_altini)
     c2.metric("Risk", f"%{int(st.session_state.tuzak_orani*100)}")
-    c3.metric("Olası Kayıp", hasar_gostergesi)
+    c3.metric("Olası Kayıp", ceza_tahmini + st.session_state.tur_altini)
 
     st.write(f"🎁 **Sıradaki Ödül:** {kazanc} Altın")
+    if st.session_state.gozcu_fısıltı: st.warning(st.session_state.gozcu_fısıltı)
 
-    if st.session_state.gozcu_fısıltı:
-        st.warning(st.session_state.gozcu_fısıltı)
-
-    b1, b2, b3, b4 = st.columns(4)
+    # Aksiyon Butonları
+    b1, b1h, b2, b2h = st.columns([0.4, 0.1, 0.4, 0.1])
     
-    if b1.button("📦 AÇ", help=f"Belirtilen ödül miktarı için risk alır. Başarısızlık durumunda bu turdaki kazancı ve bankadaki sermayenin %25'ini yok eder."):
+    if b1.button("📦 AÇ", use_container_width=True):
         if st.session_state.sandik_icerigi == "TUZAK":
             if st.session_state.envanter["Kalkan"] > 0:
                 st.session_state.envanter["Kalkan"] -= 1
-                st.session_state.mesaj = "🛡️ Kalkan seni korudu! Bir sonraki sandık için hazırlık yapıldı."
-                kaderi_yaz()
-                st.rerun()
+                st.session_state.mesaj = "🛡️ Kalkan seni korudu!"
+                kaderi_yaz(); st.rerun()
             else:
-                turu_bitir(kayip=True)
-                st.rerun()
+                turu_bitir(kayip=True); st.rerun()
         else:
             st.session_state.tur_altini += kazanc
             st.session_state.tuzak_orani += 0.07
             st.session_state.adim += 1
-            st.session_state.mesaj = f"✨ Başarılı! {kazanc} altın topladın. Toplam: {st.session_state.tur_altini}"
-            st.session_state.gozcu_fısıltı = ""
-            kaderi_yaz()
-            st.rerun()
+            st.session_state.mesaj = f"✨ Başarılı! +{kazanc} altın."
+            kaderi_yaz(); st.rerun()
+    b1h.button("❓", key="h_ac", help="Sandığı açar. Başarısızlık bankanın %25'ini ve tur altınlarını götürür.")
 
-    if b2.button("🏦 BANKALA", help="Kâr Realizasyonu: O ana kadar toplanan tüm altınları güvenli bankaya aktarır ve turu başarılı şekilde sonlandırır."):
-        turu_bitir(kayip=False)
-        st.rerun()
+    if b2.button("🏦 BANKALA", use_container_width=True):
+        turu_bitir(kayip=False); st.rerun()
+    b2h.button("❓", key="h_bank", help="Kâr Realizasyonu: Toplanan altınları bankaya aktarır ve turu bitirir.")
 
-    if b3.button("👁️ GÖZCÜ", help="Aktif Yetenek: Bir sonraki sandığı mühürlenmiş kaderine göre kontrol eder. Bilginin değeri riskin yüksekliğine göre artar."):
+    st.write("") # Boşluk
+    b3, b3h, b4, b4h = st.columns([0.4, 0.1, 0.4, 0.1])
+
+    if b3.button("👁️ GÖZCÜ", use_container_width=True):
         if st.session_state.envanter["Gözcü"] > 0:
             st.session_state.envanter["Gözcü"] -= 1
             guven = 0.8 if st.session_state.adim >= 7 else 1.0
-            gercek = st.session_state.sandik_icerigi
-            tahmin = gercek if random.random() <= guven else ("ALTIN" if gercek=="TUZAK" else "TUZAK")
+            tahmin = st.session_state.sandik_icerigi if random.random() <= guven else ("ALTIN" if st.session_state.sandik_icerigi=="TUZAK" else "TUZAK")
             st.session_state.gozcu_fısıltı = f"Gözcü: '{tahmin}' (Güven: %{guven*100})"
             st.rerun()
-        else: st.error("Eşyan yok!")
+    b3h.button("❓", key="h_goz_aktif", help="Aktif Yetenek: Bir sonraki sandığın içeriğine bakar.")
 
-    if b4.button("🌀 SIFIRLA", help="Stratejik Reset: Mevcut risk oranını %20'ye düşürerek derinliklerde daha güvenli ilerlemenizi sağlar."):
+    if b4.button("🌀 SIFIRLA", use_container_width=True):
         if st.session_state.envanter["Sıfırlayıcı"] > 0:
             st.session_state.envanter["Sıfırlayıcı"] -= 1
             st.session_state.tuzak_orani = 0.20
             st.session_state.mesaj = "🌀 Mağara titreşimi azaldı, risk %20'ye sıfırlandı!"
-            kaderi_yaz()
-            st.rerun()
-        else: st.error("Eşyan yok!")
+            kaderi_yaz(); st.rerun()
+    b4h.button("❓", key="h_sif_aktif", help="Stratejik Reset: Mevcut risk oranını %20'ye düşürür.")
