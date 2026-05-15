@@ -45,20 +45,24 @@ def oyunu_sifirla():
         del st.session_state[key]
     st.rerun()
 
-# --- ANA BAŞLIK VE NASIL OYNANIR ---
-t_col1, t_col2 = st.columns([0.8, 0.2])
+# --- ANA BAŞLIK VE YENİ TASARIMLI MENÜ ---
+t_col1, t_col2 = st.columns([0.7, 0.3])
 with t_col1:
     st.title("💎 Karanlık Mağara")
 with t_col2:
-    st.markdown("\n") # Hizalama için
-    st.markdown("❓", help="""
-    **NASIL OYNANIR?**
-    1. **Giriş:** Ücreti ödeyip mağaraya girin.
-    2. **Risk:** Her adımda 'AÇ' diyerek altın arayın. Ama dikkat, her adımda tuzak ihtimali %7 artar!
-    3. **Hasar:** Tuzağa yakalanırsanız turdaki altınları ve BANKADAKİ paranızın %25'ini kaybedersiniz.
-    4. **Bankala:** İstediğiniz an altınları güvenli bankaya aktarıp çıkabilirsiniz. Her başarılı çıkışta bir sonraki giriş ücreti artar.
-    5. **Market:** Kalkan (koruma), Gözcü (dikizleme) ve Sıfırlayıcı (risk azaltma) eşyalarını stratejik kullanın.
-    """)
+    st.write("") # Boşluk
+    with st.popover("❓ Nasıl Oynanır"):
+        st.markdown("### 📖 Oyun Kuralları")
+        st.write("---")
+        st.markdown("**1. Giriş:** Ücreti ödeyip mağaraya girin.")
+        st.markdown("**2. Risk:** Her sandık açışta tuzak ihtimali %7 artar.")
+        st.markdown("**3. Hasar:** Tuzağa yakalanırsanız bankanın **%25'i** silinir.")
+        st.markdown("**4. Bankala:** İstediğiniz an kazancı alıp çıkabilirsiniz.")
+        st.write("---")
+        st.markdown("### 🎒 Stratejik Eşyalar")
+        st.write("🛡️ **Kalkan:** Tuzağı bir kez engeller.")
+        st.write("👁️ **Gözcü:** Sandığın içine bakmanızı sağlar.")
+        st.write("🌀 **Sıfırlayıcı:** Riski tekrar %20'ye düşürür.")
 
 # --- SIDEBAR ---
 with st.sidebar:
@@ -96,7 +100,7 @@ if not st.session_state.tur_aktif:
                 st.session_state.envanter["Kalkan"] += 1
                 st.session_state.mesaj = "🛡️ Kalkan satın alındı."
                 st.rerun()
-        m1h.markdown("❓", help="Pasif Savunma: Mağara içinde tuzağa yakalandığınızda banka hasarını ve altın kaybını bir defaya mahsus %100 engeller.")
+        m1h.markdown("❓", help="Pasif Savunma: Mağara içinde tuzağa yakalandığınızda banka hasarını bir defaya mahsus %100 engeller.")
 
         m2, m2h = st.columns([0.8, 0.2])
         if m2.button("👁️ Gözcü Al (50)", use_container_width=True):
@@ -105,7 +109,7 @@ if not st.session_state.tur_aktif:
                 st.session_state.envanter["Gözcü"] += 1
                 st.session_state.mesaj = "👁️ Gözcü Kuşu satın alındı."
                 st.rerun()
-        m2h.markdown("❓", help="İstihbarat: Bir sonraki sandığın içeriğini kontrol eder. Mağaranın derinliklerine inildikçe duyuları zayıflar ve yanılma payı artar.")
+        m2h.markdown("❓", help="İstihbarat: Bir sonraki sandığın içeriğini kontrol eder. Derinlere inildikçe yanılma payı artar.")
 
         m3, m3h = st.columns([0.8, 0.2])
         if m3.button("🌀 Sıfırlayıcı Al (120)", use_container_width=True):
@@ -114,7 +118,7 @@ if not st.session_state.tur_aktif:
                 st.session_state.envanter["Sıfırlayıcı"] += 1
                 st.session_state.mesaj = "🌀 Sıfırlayıcı satın alındı."
                 st.rerun()
-        m3h.markdown("❓", help="Risk Yönetimi: Adım sayısı ilerledikçe biriken tuzak olasılığını kalıcı olarak başlangıç seviyesi olan %20'ye sabitler.")
+        m3h.markdown("❓", help="Risk Yönetimi: Biriken tuzak olasılığını kalıcı olarak başlangıç seviyesi olan %20'ye sabitler.")
 
     with col2:
         st.subheader("🚪 Giriş")
@@ -126,7 +130,7 @@ if not st.session_state.tur_aktif:
             st.session_state.mesaj = "🔦 Mağara girildi. Dikkatli ilerle!"
             kaderi_yaz()
             st.rerun()
-        g1h.markdown("❓", help="Belirtilen giriş ücretini ödeyerek mağaraya girer. Mağara içinde markete erişim kapalıdır.")
+        g1h.markdown("❓", help="Giriş ücretini ödeyerek macerayı başlatır. Mağara içinde markete erişim kapalıdır.")
 
 else:
     adim = st.session_state.adim + 1
@@ -163,7 +167,7 @@ else:
 
     if b2.button("🏦 BANKALA", use_container_width=True):
         turu_bitir(kayip=False); st.rerun()
-    b2h.markdown("❓", help="Kâr Realizasyonu: Toplanan altınları bankaya aktarır ve turu bitirir.")
+    b2h.markdown("❓", help="Toplanan altınları bankaya aktarır ve turu başarılı şekilde sonlandırır.")
 
     st.write("")
     b3, b3h, b4, b4h = st.columns([0.4, 0.1, 0.4, 0.1])
@@ -174,7 +178,7 @@ else:
             tahmin = st.session_state.sandik_icerigi if random.random() <= guven else ("ALTIN" if st.session_state.sandik_icerigi=="TUZAK" else "TUZAK")
             st.session_state.gozcu_fısıltı = f"Gözcü: '{tahmin}' (Güven: %{guven*100})"
             st.rerun()
-    b3h.markdown("❓", help="Aktif Yetenek: Bir sonraki sandığın içeriğine bakar.")
+    b3h.markdown("❓", help="Bir sonraki sandığın içeriğine bakar. Derinlerde doğruluk payı düşer.")
 
     if b4.button("🌀 SIFIRLA", use_container_width=True):
         if st.session_state.envanter["Sıfırlayıcı"] > 0:
@@ -182,4 +186,4 @@ else:
             st.session_state.tuzak_orani = 0.20
             st.session_state.mesaj = "🌀 Mağara titreşimi azaldı, risk %20'ye sıfırlandı!"
             kaderi_yaz(); st.rerun()
-    b4h.markdown("❓", help="Stratejik Reset: Mevcut risk oranını %20'ye düşürür.")
+    b4h.markdown("❓", help="Mevcut risk oranını başlangıca (%20) düşürür.")
